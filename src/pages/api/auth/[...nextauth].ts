@@ -14,7 +14,7 @@ export default NextAuth({
       scope: 'read:user'
     }),
   ],
-  
+
   callbacks: {
 
     async signIn(user, account, profile) {
@@ -43,15 +43,10 @@ export default NextAuth({
             )
           )
         )
-
-
-
-
         return true;
       } catch {
         return false;
       }
-
     }
   }
 })

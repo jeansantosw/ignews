@@ -32,7 +32,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
    
 
 
-    return res.status(200).json({ session: stripeCheckoutSession.id });
+    return res.status(200).json({ sessionId: stripeCheckoutSession.id });
 
   }else{
 

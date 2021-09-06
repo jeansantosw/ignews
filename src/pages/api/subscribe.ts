@@ -19,15 +19,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       customer: stripeCustomer.id,
       payment_method_types: ['card'],
       billing_address_collection: 'required',
-      line_items: [
-        { price: 'price_1JIXEHEWM6Opfv744oSuXHHk', quantity: 1}
-      ],
+      line_items: [ {
+        price: 'price_1JIXEHEWM6Opfv744oSuXHHk', quantity: 1, 
+      } ],
       mode: 'subscription',
       allow_promotion_codes: true,
       success_url: process.env.STRIPE_SUCCESS_URL,
       cancel_url: process.env.STRIPE_CANCEL_URL
 
     })
+
+   
+
 
     return res.status(200).json({ session: stripeCheckoutSession.id });
 

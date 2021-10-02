@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Readable } from 'stream';
 import Stripe from "stripe";
 import { stripe } from "../../services/stripe";
-import { saveSubscription } from "../_lib/manageSubscript";
+import { saveSubscription } from "./_lib/manageSubscript";
+
 
 async function buffer(readable: Readable) {
   const chunks = [];
@@ -23,7 +24,10 @@ export const config = {
 }
 
 const relevantEvents = new Set([
-  'checkout.session.completed'
+  'checkout.session.completed',
+  'customer.subscriptions.created',
+  'customer.subscriptions.updated',
+  'customer.subscriptions.deleted',
 ]);
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -47,20 +51,39 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (relevantEvents.has(type)) {
       try {
         switch (type) {
+
+          case 'customer.subscriptions.created':
+          case 'customer.subscriptions.updated':
+          case 'customer.subscriptions.deleted':
+
+            const subscription = event.data.object as Stripe.Subscription;
+
+            await saveSubscription(
+              subscription.id,
+              subscription.customer.toString(),
+              type === 'customer.subscriptions.created'
+            );
+
+
+
+            break;
+
           case 'checkout.session.completed':
 
-          const checkoutSession = event.data.object as Stripe.Checkout.Session
+            const checkoutSession = event.data.object as Stripe.Checkout.Session
+
             await saveSubscription(
               checkoutSession.subscription.toString(),
-              checkoutSession.customer.toString()
+              checkoutSession.customer.toString(),
+              true
             )
             break;
-            
+
           default:
             throw new Error('Unhandled event')
         }
-      }catch (err) {
-        return res.json( { error: 'Webhook handler failed.'})
+      } catch (err) {
+        return res.json({ error: 'Webhook handler failed.' })
       }
     }
 
